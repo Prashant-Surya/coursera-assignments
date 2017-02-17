@@ -1,0 +1,215 @@
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+public class Deque < Item> implements Iterable<Item>{
+    private int head, tail, size, capacity;
+    private Item[] items;
+    public Deque(){
+        this.head = 0;
+        this.tail = 0;
+        size = 0;
+        capacity = 1;
+        items = (Item[]) new Object[capacity];
+    }
+
+    public boolean isEmpty(){
+        if (this.size == 0){
+            return true;
+        }
+        return false;
+    }
+
+    public int size(){
+        return this.size;
+    }
+
+    private void checkAdd(Item item){
+        if (item == null){
+            throw new NullPointerException();
+        }
+    }
+
+    private void checkRemove(){
+        if (this.size == 0){
+            throw new NoSuchElementException();
+        }
+
+    }
+
+    private int getMod(int i){
+        if (i == 0){
+            return capacity-1;
+        }
+        else {
+            return (i - 1) % capacity;
+        }
+    }
+
+    private boolean emptyAdd(Item item) {
+        if (this.size == 0){
+            this.head = 0;
+            this.tail = 0;
+            this.items[0] = item;
+            return true;
+        }
+        return false;
+    }
+
+    public void addLast(Item item){
+        checkAdd(item);
+        if (!emptyAdd(item)){
+            this.tail = (tail + 1) % capacity;
+            items[this.tail] = item;
+        }
+        size += 1;
+        resize();
+    }
+
+    public void addFirst(Item item){
+        checkAdd(item);
+        if (!emptyAdd(item)){
+            System.out.println("at 70 " + this.head);
+            this.head = getMod(head);
+            System.out.println("at 73 " + this.head);
+            items[this.head] = item;
+        }
+        size += 1;
+        resize();
+    }
+
+    public Item removeFirst(){
+        checkRemove();
+        Item a;
+        if (this.head == this.tail){
+            // System.out.println("cap is "+capacity+"size is "+size+"this.head "+head+ "this.tail "+tail);
+            a = items[this.head];
+            this.head = 0;
+            this.tail = 0;
+        }
+        else {
+            // System.out.println("cap is "+capacity+"size is "+size+"this.head "+head+ "this.tail "+tail);
+            a = items[this.head];
+            this.head = (head + 1) % capacity;
+        }
+        size -= 1;
+        resize();
+        System.out.println("removed "+ a);
+        return a;
+    }
+
+    public Item removeLast(){
+        checkRemove();
+        Item a;
+        if (this.head == this.tail){
+            a = items[this.head];
+            this.head = 0;
+            this.tail = 0;
+        }
+        else {
+            a = items[this.tail];
+            this.tail = getMod(tail);
+        }
+        size -= 1;
+        resize();
+        // System.out.println("removed "+ a);
+        return a;
+    }
+
+    public Iterator < Item> iterator(){
+        Iterator < Item> it = new Iterator<Item>(){
+            private int index=head;
+
+            public boolean hasNext(){
+                return index>= head && index <=tail;
+            }
+
+            public Item next(){
+                if (!this.hasNext()){
+                    throw new NoSuchElementException();
+                }
+                return items[index++];
+            }
+
+            public void remove(){
+                throw new UnsupportedOperationException();
+            }
+        };
+
+        return it;
+    }
+
+    private void copyData(Item[] old, Item[] now){
+        int j = 0;
+        if (this.head <= this.tail){
+            for (int i = this.head; i <= this.tail; i++){
+                now[j] = old[i];
+                j += 1;
+            }
+        }
+        else {
+            j = 0;
+            for (int i = this.head; i < size ; i++){
+                now[j] = old[i];
+                j += 1;
+            }
+            for (int i = 0; i <= this.tail; i++){
+                now[j] = old[i];
+                j += 1;
+            }
+        }
+        this.items = now;
+    }
+
+    private void disp(){
+            System.out.println("cap is "+capacity+"size is "+size+"this.head "+head+ "this.tail "+tail);
+        if (this.head <= this.tail){
+            for (int i = this.head; i <= this.tail; i++){
+                System.out.println("I is " + i + "val is "+items[i]);
+            }
+        }
+        else {
+            for (int i = this.head; i < size ; i++){
+                System.out.println("I is " + i + "val is "+items[i]);
+            }
+            for (int i = 0; i <= this.tail; i++){
+                System.out.println("I is " + i + "val is "+items[i]);
+            }
+        }
+    }
+    private void resize(){
+        if (this.size ==0 || this.capacity == 0){
+            return;
+        }
+        if (this.size == this.capacity){
+            // while insertion if queue is full
+            this.capacity = 2 * this.capacity;
+            Item[] temp = (Item[]) new Object[this.capacity];
+            copyData(items, temp);
+        }else if(this.size  <= this.capacity/4){
+            // while removal if memory is free
+            this.capacity = this.capacity/4;
+            Item[] temp = (Item[]) new Object[this.capacity];
+            //System.out.println("cap is "+capacity+"size is "+size+"this.head "+head+ "this.tail "+tail);
+            copyData(items, temp);
+        }
+        this.head = 0;
+        this.tail = size-1;
+    }
+
+    public static void main(String[] args){
+        Deque<Integer> deque = new Deque<Integer>();
+        deque.addFirst(0);
+        // deque.removeFirst();
+        System.out.println("cap is "+deque.capacity+" size "+deque.size + " this.head "+deque.head + " this.tail "+deque.tail);
+        deque.addFirst(2);
+        System.out.println("cap is "+deque.capacity+" size "+deque.size + " this.head "+deque.head + " this.tail "+deque.tail);
+        //deque.disp();
+        deque.addFirst(3);
+        deque.disp();
+        System.out.println("cap is "+deque.capacity+" size "+deque.size + " this.head "+deque.head + " this.tail "+deque.tail);
+        deque.removeFirst();
+        deque.disp();
+        System.out.println("cap is "+deque.capacity+" size "+deque.size + " this.head "+deque.head + " this.tail "+deque.tail);
+    }
+
+}
